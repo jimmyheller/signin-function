@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <artifactId>${function-name}-function</artifactId>
+    <artifactId>signin-function</artifactId>
     <groupId>com.robotalife</groupId>
     <version>1</version>
     <packaging>jar</packaging>
@@ -14,7 +14,7 @@
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <name>${function-name}</name>
+    <name>signin</name>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -46,6 +46,16 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>dynamodb</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+            <version>5.4.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.16.0</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -65,7 +75,7 @@
                 <configuration>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <shadedArtifactAttached>false</shadedArtifactAttached>
-                    <outputFile>${function-name}.jar</outputFile>
+                    <outputFile>${project.build.directory}/robotalife-signin-shade.jar</outputFile>
                 </configuration>
                 <executions>
                     <execution>
