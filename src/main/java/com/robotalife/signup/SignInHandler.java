@@ -6,10 +6,11 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
+import com.google.gson.Gson;
 import com.robotalife.signup.model.SignInException;
 import com.robotalife.signup.model.SignInRequest;
+import com.robotalife.signup.model.SignInResponse;
 import com.robotalife.signup.model.User;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -56,16 +57,19 @@ public class SignInHandler implements RequestHandler<SignInRequest, APIGatewayPr
                 .build();
         User user = queryForEmail(dynamoDbClient, email, context);
         Map<String, String> payloadMap = new HashMap<>();
-        if (!bCryptPasswordEncoder.matches(signInRequest.getPassword(),user.getPassword())) {
+        if (!bCryptPasswordEncoder.matches(signInRequest.getPassword(), user.getPassword())) {
             context.getLogger().log(String.format("customer credentials are not correct: [%s]", email));
             throw new SignInException("[InternalServerError] the credentials are not correct.");
         }
         Instant instantTime = Instant.now().plus(30, DAYS);
         Date expiryDate = new Date(instantTime.getEpochSecond());
         //return response
-        response.setStatusCode(200);
-        response.setBody(generateJwtToken(payloadMap, context, expiryDate));
+        String token = generateJwtToken(payloadMap, context, expiryDate);
         saveIdItem(dynamoDbClient, user.getId().toString(), expiryDate.getTime(), context);
+        SignInResponse signInResponse = SignInResponse.newInstance(user.getId(), user.getUsername(), token);
+        String jsonResponse = new Gson().toJson(signInResponse);
+        response.setStatusCode(200);
+        response.setBody(jsonResponse);
         return response;
 
     }
